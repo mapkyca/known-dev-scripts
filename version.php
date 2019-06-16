@@ -4,7 +4,11 @@
 if (file_exists(dirname(__FILE__) . '/vendor/autoload.php')) {
     require_once(dirname(__FILE__) . '/vendor/autoload.php');
 } else {
-    die('Could not find autoload.php, did you run "composer install" ..?');
+    if (file_exists(__DIR__ . '../../../vendor/autoload.php')) {
+	require_once(__DIR__ . '../../../vendor/autoload.php');
+    } else {
+	die('Could not find autoload.php, did you run "composer install" ..?');
+    }
 }
 
 // Register console namespace
