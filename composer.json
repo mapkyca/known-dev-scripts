@@ -11,5 +11,9 @@
             "name": "Marcus Povey",
             "email": "marcus@marcus-povey.co.uk"
         }
-    ]
+    ],
+    "suggest": {
+        "mapkyca/known-phpcs": "Known coding standards",
+	"mapkyca/known-language-tools": "Known language tools"
+    }
 }
