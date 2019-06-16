@@ -26,34 +26,46 @@ $console
 	    new InputArgument('known-root', InputArgument::OPTIONAL, '/path/to/known', '.'),
 	])
         ->setCode(function (InputInterface $input, OutputInterface $output) {
-	    
+	  
+	    $type = 'core';
 	    $versionfile = $input->getArgument('known-root') . '/version.known';
 
-            if (!file_exists($versionfile))
-                throw new \RuntimeException("Version file $versionfile could not be found.");
+            if (!file_exists($versionfile)) {
+		$versionfile = $input->getArgument('known-root') . '/plugin.ini';
+		if (!file_exists($versionfile)) {
+		    throw new \RuntimeException('No plugin or core version file could be found.');
+		}
+		
+		$type = 'plugin';
+	    }
+                
 
             $details = @parse_ini_file($versionfile);
 	    if (!is_array($details))
 		throw new \RuntimeException('Version ini file is invalid');
 		    
 	    $version = explode('.', $details['version']);
-	    $build = $details['build'];
+	    
+	    if ($type == 'core')
+	    {
+		$build = $details['build'];
 	    
 	    
-	    // Build
-	    $datepart = date('Ymd');
-	    $versionpart = 1;
-	    
-	    if (preg_match("/([0-9]{8})([0-9]{2})/", $build, $matches)) {
-		if ($matches[1] == $datepart) {
-		    
-		    $versionpart = (int)$matches[2];
-		    $versionpart++;
-		    
-		    
+		// Build
+		$datepart = date('Ymd');
+		$versionpart = 1;
+
+		if (preg_match("/([0-9]{8})([0-9]{2})/", $build, $matches)) {
+		    if ($matches[1] == $datepart) {
+
+			$versionpart = (int)$matches[2];
+			$versionpart++;
+
+
+		    }
 		}
+		$details['build'] = $datepart . sprintf('%02d', $versionpart);
 	    }
-	    $details['build'] = $datepart . sprintf('%02d', $versionpart);
 	    
 	    
 	    // Version
@@ -86,24 +98,29 @@ $console
 	    
 	    // Update composer
 	    $composer_json = $input->getArgument('known-root') . '/composer.json';
-	    $composer = json_decode(file_get_contents($composer_json), true);
-	    $composer['version'] = $details['version'];
-	    file_put_contents($composer_json, json_encode($composer, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+	    if (file_exists($composer_json)) {
+		$composer = json_decode(file_get_contents($composer_json), true);
+		$composer['version'] = $details['version'];
+		file_put_contents($composer_json, json_encode($composer, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+	    }
 	    
 	    // Update package
 	    $package_json = $input->getArgument('known-root') . '/package.json';
-	    $package = json_decode(file_get_contents($package_json), true);
-	    $package['version'] = $details['version'];
-	    file_put_contents($package_json, json_encode($package, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-	    
+	    if (file_exists($package_json)) {
+		$package = json_decode(file_get_contents($package_json), true);
+		$package['version'] = $details['version'];
+		file_put_contents($package_json, json_encode($package, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+	    }
 	    
 	    $output->writeln("New version details are:");
 	    
 	    foreach ($details as $key => $value) {
-		if (is_int($value))
-		    $output->writeln("\t $key => $value");
-		else
-		    $output->writeln("\t $key => '$value'");
+		if (in_array($key, ['build', 'version'])) {
+		    if (is_int($value))
+			$output->writeln("\t $key => $value");
+		    else
+			$output->writeln("\t $key => '$value'");
+		}
 	    }
 	    
         });
