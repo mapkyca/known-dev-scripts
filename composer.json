@@ -1,0 +1,15 @@
+{
+    "name": "mapkyca/known-dev-scripts",
+    "description": "Useful Known development scripts",
+    "type": "library",
+    "require": {
+        "symfony/console": "^4.3"
+    },
+    "license": "GPL-2.0-only",
+    "authors": [
+        {
+            "name": "Marcus Povey",
+            "email": "marcus@marcus-povey.co.uk"
+        }
+    ]
+}
