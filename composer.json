@@ -1,6 +1,7 @@
 {
     "name": "mapkyca/known-dev-scripts",
     "description": "Useful Known development scripts",
+    "version": "1.1.0",
     "type": "library",
     "require": {
         "symfony/console": "^4.3"
