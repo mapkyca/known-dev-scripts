@@ -70,6 +70,11 @@ $console
                 'require' => [
                     "composer/installers" => "dev-master"
                 ],
+                'require-dev' => [
+                    'mapkyca/known-language-tools' => '^1.0',
+                    'mapkyca/known-dev-scripts' => '^1.0',
+                    'mapkyca/known-phpcs' => '^1.0'
+                ],
                 'extra' => [
                     "installer-name" => $name
                 ]
