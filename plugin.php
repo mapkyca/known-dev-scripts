@@ -57,9 +57,12 @@ $console
             }
             
             $repository = $input->getArgument('repository');
-            $repository = explode(':', $repository)[1];
-            $repository = explode('.', $repository)[0];
-            
+            if (strpos($repository, '@')!=false) { die('here');
+                $repository = explode(':', $repository)[1];
+                $repository = explode('.', $repository)[0];
+            } else {
+                $repository = trim(parse_url($repository, PHP_URL_PATH), '/'); 
+            }
             
             // Default composer
             $composer_default = [
