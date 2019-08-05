@@ -43,9 +43,10 @@ $console
                 $version = '1.0.0'; // Set default version
             }
            
-            $name = $plugin_ini['name'];
+            $name = basename(realpath($input->getArgument('location'))); 
+
             if (empty($name)) {
-                throw new RuntimeException("Could not find plugin name from plugin.ini");
+                throw new RuntimeException("Could not find plugin name from directory");
             }
             
             if (!in_array($input->getArgument('type'), [
