@@ -72,7 +72,7 @@ $console
                 'type' => $input->getArgument('type'),
                 'version' => $version,
                 'require' => [
-                    "composer/installers" => "dev-master"
+                    "composer/installers" => "~1.0"
                 ],
                 'require-dev' => [
                     'mapkyca/known-language-tools' => '^1.0',
