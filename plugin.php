@@ -32,9 +32,14 @@ $console
         ->setCode(function (InputInterface $input, OutputInterface $output) {
 	  
 	    $plugin_ini = trim($input->getArgument('location'), ' /') . '/plugin.ini';
+            $theme_ini = trim($input->getArgument('location'), ' /') . '/theme.ini';
 
             if (!file_exists($plugin_ini)) {
-                throw new RuntimeException("Could not find $plugin_ini, is this a valid plugin?");
+                if (file_exists($theme_ini)) {
+                    $plugin_ini = $theme_ini;
+                } else {
+                    throw new RuntimeException("Could not find $plugin_ini, is this a valid plugin?");
+                }
 	    }
              
             $plugin_ini = parse_ini_file($plugin_ini, false);
