@@ -17,10 +17,44 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 
+function writeIni($f, array $ini) {
+    foreach ($ini as $key => $value) {
+        if (is_array($value)) {
+            fputs($f, "\n[$key]\n");
+            writeIni($f, $value);
+        } else if (is_numeric($value))
+            fputs($f, "$key = $value\n");
+        else 
+            fputs($f, "$key = '$value'\n");
+    }
+}
+
+function findInArray(array $array, $key) {
+    
+    foreach ($array as $ak => $value) {
+        if ($ak == $key) {             return $value;
+        } else if (is_array($value)) {
+            if ($return = findInArray($value, $key)) {
+                return $return;
+            }
+        }
+    }
+}
+
+function setInArray(array &$array, $key, $newvalue) {
+    foreach ($array as $ak => $value) {
+        
+        if ($ak == $key) {
+            $array[$ak] = $newvalue;
+        } else if (is_array($value)) {
+            setInArray($value, $key, $newvalue);
+            $array[$ak] = $value;
+        }
+    }
+}
+
 // Create new console application
 $console = new Application('Known version tool');
-
-
 
 $console
         ->register('bump')
@@ -36,23 +70,30 @@ $console
 
             if (!file_exists($versionfile)) {
 		$versionfile = $input->getArgument('known-root') . '/plugin.ini';
-		if (!file_exists($versionfile)) {
-		    throw new \RuntimeException('No plugin or core version file could be found.');
-		}
-		
 		$type = 'plugin';
+
+		if (!file_exists($versionfile)) {
+	
+                    $versionfile = $input->getArgument('known-root') . '/theme.ini';
+                    $type = 'theme';
+
+                    if (!file_exists($versionfile)) {
+                        throw new \RuntimeException('No plugin or core version file could be found.');
+                    }
+
+		}
 	    }
                 
 
-            $details = @parse_ini_file($versionfile);
+            $details = @parse_ini_file($versionfile, true);
 	    if (!is_array($details))
 		throw new \RuntimeException('Version ini file is invalid');
 		    
-	    $version = explode('.', $details['version']);
+	    $version = explode('.', findInArray($details, 'version'));
 	    
 	    if ($type == 'core')
 	    {
-		$build = $details['build'];
+		$build = findInArray($details, 'build');
 	    
 	    
 		// Build
@@ -68,7 +109,8 @@ $console
 
 		    }
 		}
-		$details['build'] = $datepart . sprintf('%02d', $versionpart);
+		//$details['build'] = $datepart . sprintf('%02d', $versionpart);
+                setInArray($details, 'build', $datepart . sprintf('%02d', $versionpart));
 	    }
 	    
 	    
@@ -88,23 +130,20 @@ $console
 		    $version[2]++;
 	    }
 	    
-	    $details['version'] = implode('.', $version);
-	    
+	    //$details['version'] = implode('.', $version);
+	    setInArray($details, 'version', implode('.', $version));
+            
 	    // Write ini
 	    $f = fopen($versionfile, 'w');
-	    foreach ($details as $key => $value) {
-		if (is_int($value))
-		    fputs($f, "$key = $value\n");
-		else 
-		    fputs($f, "$key = '$value'\n");
-	    }
+            writeIni($f, $details);
+	    
 	    fclose($f);
 	    
 	    // Update composer
 	    $composer_json = $input->getArgument('known-root') . '/composer.json';
 	    if (file_exists($composer_json)) {
 		$composer = json_decode(file_get_contents($composer_json), true);
-		$composer['version'] = $details['version'];
+		$composer['version'] = findInArray($details, 'version');
 		file_put_contents($composer_json, json_encode($composer, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 	    }
 	    
@@ -112,20 +151,15 @@ $console
 	    $package_json = $input->getArgument('known-root') . '/package.json';
 	    if (file_exists($package_json)) {
 		$package = json_decode(file_get_contents($package_json), true);
-		$package['version'] = $details['version'];
+		$package['version'] = findInArray($details, 'version');
 		file_put_contents($package_json, json_encode($package, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 	    }
 	    
 	    $output->writeln("New version details are:");
-	    
-	    foreach ($details as $key => $value) {
-		if (in_array($key, ['build', 'version'])) {
-		    if (is_int($value))
-			$output->writeln("\t $key => $value");
-		    else
-			$output->writeln("\t $key => '$value'");
-		}
-	    }
+            $output->writeln("\t version => " . findInArray($details, 'version'));
+	    if ($type == 'core')
+                $output->writeln("\t build => " . findInArray($details, 'build'));
+            
 	    
         });
 
