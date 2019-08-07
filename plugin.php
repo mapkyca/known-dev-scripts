@@ -18,7 +18,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 
 // Create new console application
-$console = new Application('Known version tool');
+$console = new Application('Known plugin tool');
 
 
 $console
