@@ -6,8 +6,7 @@
     "require": {
         "symfony/console": "^4.3",
 	"mapkyca/known-language-tools": "^1.0",
-	"mapkyca/known-phpcs": "^1.0",
-	"mapkyca/known-console-tools": "^1.0"
+	"mapkyca/known-phpcs": "^1.0"
     },
     "license": "GPL-2.0-only",
     "authors": [
@@ -15,5 +14,8 @@
             "name": "Marcus Povey",
             "email": "marcus@marcus-povey.co.uk"
         }
-    ]
+    ],
+    "suggests": {
+	"mapkyca/known-console-tools": "Console Development Tools"
+    }
 }
